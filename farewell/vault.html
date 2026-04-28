@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Underground | FXEC '26</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: { extend: { fontFamily: { sans: ['Outfit', 'sans-serif'] }, colors: { brandBlue: '#3b82f6', brandPink: '#ec4899', brandYellow: '#eab308' } } }
+        }
+    </script>
+
+    <style>
+        body { background-color: #f8fafc; overflow-x: hidden; cursor: none; scroll-behavior: smooth; }
+        .cursor-dot { width: 10px; height: 10px; background: #0f172a; position: fixed; border-radius: 50%; pointer-events: none; z-index: 99999; transform: translate(-50%, -50%); transition: transform 0.1s; }
+        .cursor-ring { width: 40px; height: 40px; border: 2px solid #cbd5e1; position: fixed; border-radius: 50%; pointer-events: none; z-index: 99998; transform: translate(-50%, -50%); transition: width 0.3s, height 0.3s, border-color 0.3s; }
+        .cursor-ring.hovered { width: 70px; height: 70px; border-color: #ec4899; background: rgba(236, 72, 153, 0.05); }
+
+        .bg-orb { position: fixed; border-radius: 50%; filter: blur(100px); z-index: -1; opacity: 0.2; }
+        .orb-1 { width: 500px; height: 500px; background: #cbd5e1; top: 10%; left: -10%; }
+        .orb-2 { width: 600px; height: 600px; background: #e2e8f0; bottom: 10%; right: -10%; }
+
+        .secret-card { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 1); border-radius: 20px; padding: 30px; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 10px 30px rgba(0,0,0,0.03); break-inside: avoid; margin-bottom: 20px; animation: popIn 0.5s ease-out forwards; }
+        @keyframes popIn { from { opacity: 0; transform: scale(0.9) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        .secret-card:hover { transform: translateY(-10px) scale(1.02); box-shadow: 0 20px 40px rgba(0,0,0,0.08); z-index: 10; position: relative; }
+
+        .blur-text { color: transparent; text-shadow: 0 0 12px rgba(15, 23, 42, 0.6); transition: all 0.4s ease; user-select: none; }
+        .secret-card:hover .blur-text { color: #334155; text-shadow: 0 0 0 rgba(15, 23, 42, 0); }
+        .card-hint { transition: opacity 0.3s; }
+        .secret-card:hover .card-hint { opacity: 0; }
+
+        .text-gradient { background: linear-gradient(90deg, #ec4899, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .menu-link { display: flex; transform: translateX(100px) scale(0.9); opacity: 0; transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .menu-open .menu-link { transform: translateX(0) scale(1); opacity: 1; }
+
+        input, select, textarea { transition: all 0.3s; cursor: none; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: #ec4899; box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.1); }
+    </style>
+</head>
+<body class="text-slate-800 antialiased">
+
+    <div class="cursor-dot"></div><div class="cursor-ring"></div>
+    <div class="bg-orb orb-1"></div><div class="bg-orb orb-2"></div>
+
+    <button id="menu-btn" class="fixed top-8 right-8 z-[100] bg-white text-slate-900 font-bold px-6 py-3 rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.1)] hover:shadow-brandPink/30 border border-slate-100 transition-all duration-300 interactive-btn flex items-center gap-2 hover:scale-105">
+        <span id="menu-text">MENU</span>
+        <svg id="menu-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+    </button>
+
+    <div id="menu-overlay" class="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[90] opacity-0 pointer-events-none transition-opacity duration-500"></div>
+
+    <nav id="side-menu" class="fixed top-0 right-0 h-full w-full md:w-[450px] z-[95] pointer-events-none flex flex-col justify-center items-end pr-8 pl-4 gap-4">
+        <a href="gallery.html" class="menu-link pointer-events-auto w-full max-w-[350px] bg-white/90 backdrop-blur-lg border border-white/50 p-5 rounded-3xl shadow-xl hover:shadow-brandBlue/20 hover:border-brandBlue group transition-colors interactive-btn items-center gap-4">
+            <div class="w-12 h-12 rounded-full bg-brandBlue/10 flex items-center justify-center text-brandBlue text-xl font-black group-hover:scale-110 transition-transform">01</div>
+            <div><h3 class="text-2xl font-black text-slate-900">Visual Archives</h3></div>
+        </a>
+        <a href="index.html" class="menu-link pointer-events-auto w-full max-w-[350px] bg-slate-900 text-white p-4 rounded-2xl shadow-lg hover:bg-brandBlue mt-4 interactive-btn flex items-center justify-center gap-2">
+            <span>🏠</span> <span class="font-bold text-sm tracking-wider">BACK TO HUB</span>
+        </a>
+    </nav>
+
+    <nav class="absolute top-0 w-full z-50">
+        <div class="max-w-7xl mx-auto px-6 py-8 flex justify-between items-center">
+            <a href="index.html" class="interactive-btn font-bold text-slate-500 hover:text-brandPink transition flex items-center gap-2">← Back to Hub</a>
+            <div class="font-black text-xl tracking-widest text-slate-900 opacity-50">EPOCH '26</div>
+        </div>
+    </nav>
+
+    <main class="pt-32 pb-20 px-6 md:px-12 max-w-7xl mx-auto min-h-screen">
+        
+        <div class="text-center mb-16" data-aos="fade-down">
+            <div class="inline-block bg-white px-4 py-1 rounded-full shadow-sm text-brandPink font-bold uppercase mb-4 text-xs tracking-widest">Encrypted Cloud Network 🟢</div>
+            <h1 class="text-6xl md:text-8xl font-black mb-4">The <span class="text-gradient">Underground</span></h1>
+            <p class="text-xl text-slate-500 max-w-2xl mx-auto">Welcome to the secret vault of FXEC AI & DS '26. Drop a message, confess a crush, or roast a friend. It's completely anonymous.</p>
+        </div>
+
+        <div class="flex flex-col lg:flex-row gap-10 items-start">
+            
+            <div class="w-full lg:w-1/3 lg:sticky lg:top-32" data-aos="fade-right">
+                <div class="bg-white rounded-3xl p-8 shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-slate-100">
+                    <h2 class="text-2xl font-black text-slate-900 mb-2">Drop a Secret 🤫</h2>
+                    <p class="text-sm text-slate-500 mb-6">No names are recorded. Speak your heart out.</p>
+
+                    <form id="confession-form">
+                        <div class="mb-5">
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Category</label>
+                            <select id="c-type" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-700 font-medium interactive-btn" required>
+                                <option value="crush">💌 Anonymous Crush</option>
+                                <option value="roast">🔥 Friendly Roast</option>
+                                <option value="proxy">🤝 Proxy / Appreciation</option>
+                            </select>
+                        </div>
+                        <div class="mb-5">
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">To Whom? (Initials or Nickname)</label>
+                            <input type="text" id="c-to" placeholder="e.g. Backbench Boys, JS..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-700 font-medium interactive-btn" required maxlength="30">
+                        </div>
+                        <div class="mb-6">
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">The Message</label>
+                            <textarea id="c-msg" rows="4" placeholder="Write your confession here..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-700 font-medium resize-none interactive-btn" required></textarea>
+                        </div>
+                        <button type="submit" id="c-submit-btn" class="w-full bg-slate-900 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-brandPink hover:shadow-brandPink/30 transition-all duration-300 interactive-btn">
+                            Lock in Vault 🔒
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="w-full lg:w-2/3">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold text-slate-800">Global Drops</h3>
+                    <span class="text-sm font-medium text-slate-400 animate-pulse" id="vault-status">Listening to cloud...</span>
+                </div>
+                
+                <div id="vault-grid" class="columns-1 md:columns-2 gap-5 space-y-5">
+                    </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({ once: true, offset: 50, duration: 800, easing: 'ease-out-cubic' });
+
+        const cursorDot = document.querySelector('.cursor-dot'); const cursorRing = document.querySelector('.cursor-ring');
+        document.addEventListener('mousemove', (e) => { cursorDot.style.left = e.clientX + 'px'; cursorDot.style.top = e.clientY + 'px'; setTimeout(() => { cursorRing.style.left = e.clientX + 'px'; cursorRing.style.top = e.clientY + 'px'; }, 50); });
+
+        function bindCursorHover() {
+            document.querySelectorAll('.interactive-btn').forEach(el => {
+                el.addEventListener('mouseenter', () => cursorRing.classList.add('hovered'));
+                el.addEventListener('mouseleave', () => cursorRing.classList.remove('hovered'));
+            });
+        }
+        bindCursorHover();
+
+        function toggleMenu() {
+            const sideMenu = document.getElementById('side-menu'); const menuOverlay = document.getElementById('menu-overlay');
+            const open = sideMenu.classList.toggle('menu-open');
+            menuOverlay.classList.toggle('opacity-0', !open); menuOverlay.classList.toggle('pointer-events-none', !open);
+            document.getElementById('menu-text').innerText = open ? "CLOSE" : "MENU";
+        }
+        document.getElementById('menu-btn').addEventListener('click', toggleMenu);
+        document.getElementById('menu-overlay').addEventListener('click', toggleMenu);
+    </script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+        import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB8gwq9lzD7YfYkc5RGFXYRD7ChCVlzmhs",
+            authDomain: "fxec-batch-26.firebaseapp.com",
+            databaseURL: "https://fxec-batch-26-default-rtdb.firebaseio.com",
+            projectId: "fxec-batch-26",
+            storageBucket: "fxec-batch-26.firebasestorage.app",
+            messagingSenderId: "727755435016",
+            appId: "1:727755435016:web:eb0353c251f93ad78cb5bd"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const vaultRef = ref(db, 'vault');
+        const grid = document.getElementById('vault-grid');
+        const statusText = document.getElementById('vault-status');
+
+        function getTypeStyles(type) {
+            if(type === 'crush') return { icon: '💌', color: 'text-brandPink', border: 'border-pink-100', bg: 'bg-pink-50' };
+            if(type === 'roast') return { icon: '🔥', color: 'text-brandYellow', border: 'border-yellow-100', bg: 'bg-yellow-50' };
+            return { icon: '🤝', color: 'text-brandBlue', border: 'border-blue-100', bg: 'bg-blue-50' };
+        }
+
+        // Form Submit to Cloud
+        document.getElementById('confession-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('c-submit-btn');
+            const type = document.getElementById('c-type').value;
+            const to = document.getElementById('c-to').value;
+            const msg = document.getElementById('c-msg').value;
+
+            btn.innerHTML = "Locking... ⏳"; btn.classList.add('opacity-50', 'pointer-events-none');
+
+            try {
+                await push(vaultRef, { type: type, to: to, msg: msg, timestamp: Date.now() });
+                e.target.reset();
+                btn.innerHTML = "Locked Successfully! ✅";
+                btn.classList.replace('bg-slate-900', 'bg-emerald-500');
+                setTimeout(() => { 
+                    btn.innerHTML = "Lock in Vault 🔒"; 
+                    btn.classList.replace('bg-emerald-500', 'bg-slate-900');
+                    btn.classList.remove('opacity-50', 'pointer-events-none');
+                }, 2000);
+            } catch (error) {
+                console.error(error); alert("Network error. Try again!");
+                btn.innerHTML = "Lock in Vault 🔒"; btn.classList.remove('opacity-50', 'pointer-events-none');
+            }
+        });
+
+        // Listen for Vault drops in real-time
+        onChildAdded(vaultRef, (snapshot) => {
+            statusText.innerText = "Hover to read";
+            statusText.classList.remove('animate-pulse');
+
+            const data = snapshot.val();
+            const styles = getTypeStyles(data.type);
+            
+            // Format a simple relative date text based on timestamp (Fallback: "Recently")
+            const dateText = data.timestamp ? new Date(data.timestamp).toLocaleDateString() : "Recently";
+
+            const cardHtml = `
+                <div class="secret-card interactive-btn ${styles.border} hover:border-transparent">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex items-center gap-2">
+                            <span class="w-8 h-8 rounded-full ${styles.bg} flex items-center justify-center text-sm">${styles.icon}</span>
+                            <span class="font-bold text-slate-800 text-sm">To: ${data.to}</span>
+                        </div>
+                        <span class="text-xs font-medium text-slate-400">${dateText}</span>
+                    </div>
+                    <div class="relative">
+                        <p class="text-base leading-relaxed font-medium blur-text">"${data.msg}"</p>
+                        <div class="absolute inset-0 flex items-center justify-center pointer-events-none card-hint">
+                            <span class="bg-slate-900/10 text-slate-500 font-bold text-xs px-3 py-1 rounded-full backdrop-blur-sm">Hover to reveal</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            // Add newest secrets to the top
+            grid.insertAdjacentHTML('afterbegin', cardHtml);
+            
+            // Re-bind cursor logic for the new card
+            if(window.bindCursorHover) window.bindCursorHover();
+        });
+    </script>
+</body>
+</html>

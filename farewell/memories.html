@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Echoes of '26 | Memories</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&family=Caveat:wght@700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script>tailwind.config = { theme: { extend: { fontFamily: { sans: ['Outfit', 'sans-serif'], hand: ['Caveat', 'cursive'] }, colors: { brandBlue: '#3b82f6', brandPink: '#ff007f', brandYellow: '#ffea00' } } } }</script>
+    <style>
+        body { background-color: #f8fafc; overflow-x: hidden; cursor: none; }
+        .cursor-dot { width: 10px; height: 10px; background: #ff007f; position: fixed; border-radius: 50%; pointer-events: none; z-index: 999999; transform: translate(-50%, -50%); transition: transform 0.1s; }
+        .cursor-ring { width: 40px; height: 40px; border: 2px solid #3b82f6; position: fixed; border-radius: 50%; pointer-events: none; z-index: 999998; transform: translate(-50%, -50%); transition: width 0.3s, height 0.3s, border-color 0.3s; }
+        .memory-card { background: white; padding: 15px 15px 35px 15px; border-radius: 4px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); transition: all 0.4s ease; transform: rotate(var(--r)); break-inside: avoid; margin-bottom: 25px; border: 1px solid #f1f5f9; cursor: pointer; position: relative;}
+        .memory-card:hover { transform: rotate(0deg) scale(1.05); z-index: 10; box-shadow: 0 20px 50px rgba(59, 130, 246, 0.2); border-color: #3b82f6; }
+        .img-placeholder { width: 100%; aspect-ratio: 1; background: linear-gradient(135deg, #f1f5f9, #e2e8f0); border-radius: 2px; display: flex; align-items: center; justify-content: center; font-size: 3rem; margin-bottom: 1rem; }
+        #memory-modal { display: none; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(20px); z-index: 200; }
+    </style>
+</head>
+<body class="text-slate-800 antialiased">
+    <div id="lightbox" class="fixed inset-0 z-[2000] bg-slate-900/95 backdrop-blur-sm hidden flex-col items-center justify-center opacity-0 transition-opacity duration-300">
+        <button onclick="closeLightbox()" class="absolute top-6 right-6 text-white font-black text-2xl bg-slate-800 rounded-full w-12 h-12 hover:bg-brandPink transition interactive-btn z-50">✕</button>
+        <div id="lightbox-content" class="transition-transform transform scale-95 flex items-center justify-center w-full h-full"></div>
+    </div>
+
+    <div class="cursor-dot"></div><div class="cursor-ring"></div>
+
+    <nav class="fixed top-0 w-full z-[100] px-6 py-6 flex justify-between items-center pointer-events-none">
+        <a href="index.html" class="pointer-events-auto bg-white/80 backdrop-blur-md text-slate-900 font-bold px-6 py-3 rounded-full shadow-lg transition-all interactive-btn hover:scale-105">← BACK TO HUB</a>
+    </nav>
+
+    <main class="pt-32 pb-20 px-6 md:px-12 max-w-7xl mx-auto min-h-[80vh]">
+        <div class="text-center mb-16" data-aos="fade-down">
+            <h1 class="text-6xl md:text-8xl font-black mb-4">The <span class="text-transparent bg-clip-text bg-gradient-to-r from-brandBlue to-brandPink">Echoes</span></h1>
+            <p class="text-xl text-slate-500">Relive the best 4 years. Uploaded photos and videos appear globally in real-time.</p>
+            <button onclick="toggleModal(true)" class="mt-8 bg-brandPink text-white font-black px-10 py-4 rounded-full shadow-2xl hover:scale-105 transition interactive-btn">+ DROP A MEMORY</button>
+        </div>
+        <div id="loading-text" class="text-center text-slate-400 font-bold mb-8 animate-pulse">Syncing with cloud database... ☁️</div>
+        <div id="memory-wall" class="columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-6"></div>
+    </main>
+
+    <div id="memory-modal" class="fixed inset-0 flex items-center justify-center p-6">
+        <div class="bg-white rounded-[2.5rem] p-10 w-full max-w-lg shadow-2xl relative border border-slate-100">
+            <button onclick="toggleModal(false)" class="absolute top-6 right-6 text-slate-400 hover:text-brandPink interactive-btn text-xl font-black">✕</button>
+            <h2 class="text-3xl font-black mb-6">Share a Memory ✍️</h2>
+            <form id="mem-form" class="space-y-4">
+                <input type="text" id="mem-name" placeholder="Your Name" class="w-full px-6 py-4 rounded-2xl border-2 border-slate-50 outline-none font-bold bg-slate-50" required>
+                <textarea id="mem-text" placeholder="Write something heartfelt..." class="w-full px-6 py-4 rounded-2xl border-2 border-slate-50 outline-none font-medium h-32 bg-slate-50" required></textarea>
+                <label class="block bg-white border-2 border-dashed border-slate-200 rounded-2xl p-6 text-center cursor-pointer hover:border-brandPink transition">
+                    <span id="file-label" class="text-slate-400 font-bold">Select Media (Video/Img, Max 10MB) Optional</span>
+                    <input type="file" id="mem-photo" class="hidden" accept="image/*,video/*" onchange="document.getElementById('file-label').innerText = '✅ ' + this.files[0].name">
+                </label>
+                <button type="submit" id="mem-submit-btn" class="w-full bg-slate-900 text-white font-black py-5 rounded-2xl hover:bg-brandBlue transition shadow-xl">POST TO WALL</button>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+        import { getDatabase, ref, push, onChildAdded, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB8gwq9lzD7YfYkc5RGFXYRD7ChCVlzmhs", authDomain: "fxec-batch-26.firebaseapp.com",
+            databaseURL: "https://fxec-batch-26-default-rtdb.firebaseio.com", projectId: "fxec-batch-26"
+        };
+        const app = initializeApp(firebaseConfig); const db = getDatabase(app); const memRef = ref(db, 'memories');
+        
+        let myDeviceId = localStorage.getItem('fxec_device_id');
+        if (!myDeviceId) { myDeviceId = 'student_' + Math.random().toString(36).substr(2, 9); localStorage.setItem('fxec_device_id', myDeviceId); }
+
+        window.toggleModal = function(show) { document.getElementById('memory-modal').style.display = show ? 'flex' : 'none'; }
+        window.openLightbox = function(src) {
+            if(!src) return;
+            const lb = document.getElementById('lightbox'); const content = document.getElementById('lightbox-content');
+            if(src.includes('data:video')) { content.innerHTML = `<video src="${src}" controls autoplay class="max-w-[90%] max-h-[85vh] rounded-xl shadow-2xl"></video>`; } 
+            else { content.innerHTML = `<img src="${src}" class="max-w-[90%] max-h-[85vh] object-contain rounded-xl shadow-2xl">`; }
+            lb.style.display = 'flex'; setTimeout(() => { lb.classList.remove('opacity-0'); content.classList.remove('scale-95'); }, 10);
+        }
+        window.closeLightbox = function() {
+            const lb = document.getElementById('lightbox'); const content = document.getElementById('lightbox-content');
+            lb.classList.add('opacity-0'); content.classList.add('scale-95'); setTimeout(() => { lb.style.display = 'none'; content.innerHTML=''; }, 300);
+        }
+        window.deleteCloudData = async function(id) { if(confirm("Delete this memory forever?")) { try { await remove(ref(db, `memories/${id}`)); const el = document.getElementById(`item-${id}`); if(el) el.remove(); } catch(e) { alert("Error deleting."); } } }
+
+        const dot = document.querySelector('.cursor-dot'); const ring = document.querySelector('.cursor-ring');
+        document.addEventListener('mousemove', (e) => { dot.style.left = e.clientX + 'px'; dot.style.top = e.clientY + 'px'; setTimeout(() => { ring.style.left = e.clientX + 'px'; ring.style.top = e.clientY + 'px'; }, 50); });
+
+        document.getElementById('mem-form').addEventListener('submit', async (e) => {
+            e.preventDefault(); const btn = document.getElementById('mem-submit-btn'); const file = document.getElementById('mem-photo').files[0];
+            if(file && file.size > 10000000) return alert("File too large! Max 10MB.");
+            btn.innerText = "UPLOADING... ⏳"; btn.classList.add('opacity-50', 'pointer-events-none');
+            const dataObj = { name: document.getElementById('mem-name').value, text: document.getElementById('mem-text').value, userId: myDeviceId, timestamp: Date.now(), photo: "" };
+
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = async (ev) => {
+                    try { dataObj.photo = ev.target.result; await push(memRef, dataObj); resetForm(btn); } catch(err) { alert("Upload failed!"); resetForm(btn); }
+                }; reader.readAsDataURL(file);
+            } else { try { await push(memRef, dataObj); resetForm(btn); } catch(err) { alert("Upload failed!"); resetForm(btn); } }
+        });
+
+        function resetForm(btn) { document.getElementById('mem-form').reset(); document.getElementById('file-label').innerText = "Select Media (Optional)"; btn.innerText = "POST TO WALL"; btn.classList.remove('opacity-50', 'pointer-events-none'); toggleModal(false); }
+
+        onChildAdded(memRef, (snapshot) => {
+            document.getElementById('loading-text').style.display = 'none';
+            const data = snapshot.val(); const wall = document.getElementById('memory-wall');
+            const isMine = data.userId === myDeviceId;
+            const delBtn = isMine ? `<button onclick="event.stopPropagation(); window.deleteCloudData('${snapshot.key}')" class="absolute top-2 right-2 bg-red-500/80 text-white w-7 h-7 rounded-full flex items-center justify-center z-[100] text-xs hover:bg-red-600 transition">🗑️</button>` : '';
+            
+            let mediaHtml = `<div class="img-placeholder">✨</div>`;
+            if(data.photo) {
+                if(data.photo.includes('data:video')) mediaHtml = `<div class="relative"><video src="${data.photo}" autoplay loop muted playsinline class="w-full aspect-square object-cover rounded-sm mb-4"></video><div class="absolute top-2 left-2 bg-black/50 text-white p-1 rounded-full text-[10px] z-50">🎥</div></div>`;
+                else mediaHtml = `<img src="${data.photo}" class="w-full aspect-square object-cover rounded-sm mb-4">`;
+            }
+
+            const card = document.createElement('div'); card.id = `item-${snapshot.key}`;
+            card.className = "memory-card interactive-btn animate-pulse"; setTimeout(() => card.classList.remove('animate-pulse'), 1500);
+            card.style.setProperty('--r', `${(Math.random() * 6 - 3).toFixed(2)}deg`);
+            card.setAttribute('onclick', `openLightbox('${data.photo || ""}')`);
+            card.innerHTML = `${delBtn}${mediaHtml}<p class="font-hand text-2xl text-slate-700 leading-tight mb-4">"${data.text}"</p><div class="flex items-center gap-2"><div class="w-8 h-8 rounded-full bg-brandBlue text-white flex items-center justify-center font-bold text-xs">${data.name[0].toUpperCase()}</div><span class="font-black text-xs uppercase tracking-widest text-slate-500">${data.name}</span></div>`;
+            wall.prepend(card);
+        });
+    </script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>AOS.init();</script>
+</body>
+</html>
