@@ -37,7 +37,7 @@ Since this project utilizes a clean, serverless static architecture, setting it 
 
 **1️⃣ Clone the repository**
 ```bash
-git clone [https://github.com/nirmalbabu05/The-Batch-Vault.git](https://github.com/yourusername/The-Batch-Vault.git)
+git clone [https://github.com/nirmalbabu05/The-Batch-Vault.git](https://github.com/nirmalbabu05/The-Batch-Vault.git)
 cd The-Batch-Vault
 ```
 
